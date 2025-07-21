@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./frontend
+    container_name: sveltekit-app
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    working_dir: /app
+    environment:
+      - DATABASE_URL=file:./prisma/dev.db
+      - JWT_SECRET=supersecretkey
+    command: npm run dev
