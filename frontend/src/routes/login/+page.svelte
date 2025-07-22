@@ -3,6 +3,9 @@
 
 	let email = '';
 	let password = '';
+	let username = '';
+	let firstname = '';
+	let lastname = '';
 	let error = '';
 	let isRegistering = false;
 
@@ -11,9 +14,7 @@
 		try {
 			const res = await fetch('http://localhost:8000/api/login', {
 				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
+				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ email, password }),
 				credentials: 'include'
 			});
@@ -36,10 +37,9 @@
 		try {
 			const res = await fetch('http://localhost:8000/api/register', {
 				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ email, password })
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ email, password, username, firstname, lastname }),
+				credentials: 'include'
 			});
 
 			const data = await res.json();
@@ -48,7 +48,7 @@
 				return;
 			}
 
-			isRegistering = false; // go back to login screen
+			isRegistering = false;
 		} catch (err) {
 			error = 'Network error during registration';
 			console.error(err);
@@ -80,6 +80,35 @@
 				required
 				class="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
 			/>
+
+			{#if isRegistering}
+				<input
+					type="text"
+					name="username"
+					placeholder="Username"
+					bind:value={username}
+					required
+					class="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+				/>
+
+				<input
+					type="text"
+					name="firstname"
+					placeholder="First Name"
+					bind:value={firstname}
+					required
+					class="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+				/>
+
+				<input
+					type="text"
+					name="lastname"
+					placeholder="Last Name"
+					bind:value={lastname}
+					required
+					class="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+				/>
+			{/if}
 
 			<button
 				type="submit"
