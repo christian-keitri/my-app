@@ -11,7 +11,29 @@ model User {
   id        Int     @id @default(autoincrement())
   email     String  @unique
   password  String
-  username  String? // <-- Prisma expects this column in the database
+  username  String?
   firstname String?
   lastname  String?
+
+  organizationId String? // optional FK
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  notes     String?
+  isEnabled  Boolean  @default(true) // ✅ Add this l
+  status    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  users    User[]
+  branches Branch[]
+}
+
+model Branch {
+  id             String       @id @default(uuid())
+  name           String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
 }

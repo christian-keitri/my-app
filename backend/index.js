@@ -8,14 +8,17 @@ import cookieParser from 'cookie-parser';
 const prisma = new PrismaClient();
 const app = express();
 
-const JWT_SECRET = 'your-super-secret-key'; // In production, use dotenv
+const JWT_SECRET = 'your-super-secret-key'; // ⚠️ In production, store in .env
 
+// Middleware
 app.use(cors({
     origin: 'http://localhost:5173',
     credentials: true
 }));
 app.use(express.json());
 app.use(cookieParser());
+
+// ========== AUTH ==========
 
 // Register
 app.post('/api/register', async (req, res) => {
@@ -92,6 +95,14 @@ app.get('/api/me', (req, res) => {
     }
 });
 
+// Logout
+app.post('/api/logout', (req, res) => {
+    res.clearCookie('token');
+    res.json({ message: 'Logged out' });
+});
+
+// ========== USERS ==========
+
 // Get all users
 app.get('/api/users', async (req, res) => {
     try {
@@ -112,7 +123,7 @@ app.get('/api/users', async (req, res) => {
     }
 });
 
-// ✅ ADD THIS — Create user (for modal form)
+// Create user (used in modal form)
 app.post('/api/users', async (req, res) => {
     const { username, email, firstname, lastname, password } = req.body;
 
@@ -152,7 +163,6 @@ app.post('/api/users', async (req, res) => {
     }
 });
 
-
 // Update user
 app.put('/api/users/:id', async (req, res) => {
     const { id } = req.params;
@@ -176,13 +186,78 @@ app.put('/api/users/:id', async (req, res) => {
     }
 });
 
+// ========== ORGANIZATIONS ==========
 
-// Logout
-app.post('/api/logout', (req, res) => {
-    res.clearCookie('token');
-    res.json({ message: 'Logged out' });
+// Get all organizations
+app.get('/api/clients', async (req, res) => {
+    try {
+        const organizations = await prisma.organization.findMany({
+            include: {
+                users: true // Optional: include users if needed
+            }
+        });
+        res.json(organizations);
+    } catch (err) {
+        console.error('Failed to fetch organizations:', err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
 });
 
+// Create organization
+app.post('/api/clients', async (req, res) => {
+    const { name, description } = req.body;
+
+    if (!name) return res.status(400).json({ message: 'Name is required' });
+
+    try {
+        const organization = await prisma.organization.create({
+            data: { name, description }
+        });
+        res.status(201).json(organization);
+    } catch (err) {
+        console.error('Create failed:', err);
+        res.status(500).json({ message: 'Failed to create organization' });
+    }
+});
+
+// Update organization
+app.put('/api/clients/:id', async (req, res) => {
+    const { id } = req.params;
+    const { name, description } = req.body;
+
+    try {
+        const updated = await prisma.organization.update({
+            where: { id: parseInt(id) },
+            data: { name, description }
+        });
+        res.json(updated);
+    } catch (err) {
+        console.error('Update failed:', err);
+        res.status(500).json({ message: 'Failed to update organization' });
+    }
+});
+
+// Get all organizations
+app.get('/api/organizations', async (req, res) => {
+    try {
+        const organizations = await prisma.organization.findMany({
+            orderBy: { createdAt: 'desc' },
+            select: {
+                id: true,
+                name: true,
+                notes: true,
+                isEnabled: true,
+                createdAt: true
+            }
+        });
+        res.json(organizations);
+    } catch (err) {
+        console.error('Error fetching organizations:', err);
+        res.status(500).json({ message: 'Failed to fetch organizations' });
+    }
+});
+
+
 app.listen(8000, () => {
-    console.log('Server running on http://localhost:8000');
+    console.log('✅ Server running on http://localhost:8000');
 });
