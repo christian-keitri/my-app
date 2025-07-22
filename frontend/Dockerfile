@@ -1,4 +1,5 @@
-# Assuming Node.js base image
+# frontend/Dockerfile
+
 FROM node:18
 
 WORKDIR /app
@@ -6,8 +7,6 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-COPY . .             
-
-RUN npx prisma generate
+COPY . .
 
 CMD ["npm", "run", "dev"]
