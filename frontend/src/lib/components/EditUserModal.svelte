@@ -42,48 +42,42 @@
 
 			if (!res.ok) throw new Error('Failed to update user');
 
-			dispatch('updated'); // tell parent to refresh
-			close(); // close the modal
+			dispatch('updated'); // Notify parent to refresh
+			close(); // Close modal
 		} catch (err) {
 			console.error('Update user failed:', err);
+			alert('Failed to update user');
 		}
 	}
 </script>
 
 {#if open && user}
-	<div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-		<div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
-			<h2 class="text-xl font-bold mb-4">Edit User</h2>
+	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+		<div class="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-full max-w-md space-y-4">
+			<h2 class="text-xl font-bold mb-2 text-gray-900 dark:text-gray-100">Edit User</h2>
 
-			<div class="space-y-3">
-				<input
-					bind:value={username}
-					placeholder="Username"
-					class="w-full border px-3 py-2 rounded"
-				/>
-				<input
-					bind:value={email}
-					type="email"
-					placeholder="Email"
-					class="w-full border px-3 py-2 rounded"
-				/>
-				<input
-					bind:value={firstname}
-					placeholder="First Name"
-					class="w-full border px-3 py-2 rounded"
-				/>
-				<input
-					bind:value={lastname}
-					placeholder="Last Name"
-					class="w-full border px-3 py-2 rounded"
-				/>
-			</div>
+			<!-- Inputs -->
+			<input class="w-full p-2 border rounded" bind:value={username} placeholder="Username" />
+			<input
+				class="w-full p-2 border rounded"
+				type="email"
+				bind:value={email}
+				placeholder="Email"
+			/>
+			<input class="w-full p-2 border rounded" bind:value={firstname} placeholder="First Name" />
+			<input class="w-full p-2 border rounded" bind:value={lastname} placeholder="Last Name" />
 
-			<div class="mt-6 flex justify-end gap-2">
-				<button on:click={close} class="px-4 py-2 rounded border border-gray-300">Cancel</button>
+			<!-- Buttons -->
+			<div class="flex justify-end space-x-2 pt-2">
 				<button
+					class="px-4 py-2 border rounded text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+					on:click={close}
+				>
+					Cancel
+				</button>
+				<button
+					class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm"
 					on:click={handleUpdate}
-					class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
 				>
 					Update
 				</button>
@@ -91,3 +85,14 @@
 		</div>
 	</div>
 {/if}
+
+<style>
+	input {
+		background-color: white;
+		color: black;
+	}
+	:global(.dark) input {
+		background-color: #1f2937;
+		color: white;
+	}
+</style>

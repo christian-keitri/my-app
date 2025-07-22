@@ -23,7 +23,7 @@ model Organization {
   id        String   @id @default(uuid())
   name      String
   notes     String?
-  isEnabled  Boolean  @default(true) // ✅ Add this l
+  isEnabled  Boolean  @default(true) 
   status    Boolean  @default(true)
   createdAt DateTime @default(now())
 

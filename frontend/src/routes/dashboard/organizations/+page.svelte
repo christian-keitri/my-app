@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { Eye, Pencil, Settings, Power } from 'lucide-svelte';
+	import CreateOrganizationModal from '$lib/components/CreateOrganizationModal.svelte';
 
 	type Organization = {
 		id: string;
@@ -13,6 +14,7 @@
 	let organizations: Organization[] = [];
 	let error = '';
 	let loading = true;
+	let showCreateModal = false;
 
 	onMount(fetchOrganizations);
 
@@ -47,6 +49,31 @@
 	function openSettings(org: Organization) {
 		console.log('Settings for', org.name);
 	}
+
+	async function handleCreate(event: CustomEvent) {
+		const newOrg = event.detail;
+
+		try {
+			const res = await fetch('http://localhost:8000/api/organizations', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				credentials: 'include',
+				body: JSON.stringify(newOrg)
+			});
+
+			if (!res.ok) throw new Error('Failed to create organization');
+
+			const created = await res.json();
+			organizations = [...organizations, created];
+		} catch (err) {
+			console.error('Error creating organization:', err);
+			alert('Failed to create organization');
+		} finally {
+			showCreateModal = false;
+		}
+	}
 </script>
 
 <!-- Title -->
@@ -54,7 +81,7 @@
 	<h1 class="text-2xl font-bold">Organizations Management</h1>
 	<button
 		class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm"
-		on:click={() => console.log('Create org modal')}
+		on:click={() => (showCreateModal = true)}
 	>
 		+ Create Organization
 	</button>
@@ -113,6 +140,9 @@
 	</div>
 {:else}
 	<p class="text-gray-500">No organizations found.</p>
+{/if}
+{#if showCreateModal}
+	<CreateOrganizationModal on:close={() => (showCreateModal = false)} on:create={handleCreate} />
 {/if}
 
 <style>
