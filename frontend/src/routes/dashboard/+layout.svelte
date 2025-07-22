@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { LayoutDashboard, Users, Building, KeyRound, LogOut, User } from 'lucide-svelte';
 
 	let user: { userId: number; email: string } | null = null;
 	let loading = true;
@@ -40,11 +41,27 @@
 	<aside class="w-64 bg-gray-900 text-white p-4 flex flex-col justify-between">
 		<div>
 			<h2 class="text-xl font-bold mb-4">Sidebar</h2>
-			<ul class="space-y-2">
-				<li><a href="/dashboard" class="hover:underline">Dashboard</a></li>
-				<li><a href="/dashboard/users" class="hover:underline">Users</a></li>
-				<li><a href="/dashboard/organizations" class="hover:underline">Organizations</a></li>
-				<li><a href="/dashboard/portals" class="hover:underline">Portals</a></li>
+			<ul class="space-y-3">
+				<li>
+					<a href="/dashboard" class="flex items-center gap-2 hover:underline">
+						<LayoutDashboard class="w-5 h-5" /> Dashboard
+					</a>
+				</li>
+				<li>
+					<a href="/dashboard/users" class="flex items-center gap-2 hover:underline">
+						<Users class="w-5 h-5" /> Users
+					</a>
+				</li>
+				<li>
+					<a href="/dashboard/organizations" class="flex items-center gap-2 hover:underline">
+						<Building class="w-5 h-5" /> Organizations
+					</a>
+				</li>
+				<li>
+					<a href="/dashboard/portals" class="flex items-center gap-2 hover:underline">
+						<KeyRound class="w-5 h-5" /> Portals
+					</a>
+				</li>
 			</ul>
 		</div>
 
@@ -52,12 +69,15 @@
 			{#if loading}
 				<p>Loading user...</p>
 			{:else if user}
-				<p class="mb-2">👤 Logged in as: <strong>{user.email}</strong></p>
+				<div class="flex items-center gap-2 mb-2">
+					<User class="w-8 h-8 text-white" />
+					<span>Logged in as: <strong class="text-white">{user.email}</strong></span>
+				</div>
 				<button
 					on:click={logout}
-					class="mt-2 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm"
+					class="mt-2 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm flex items-center gap-2"
 				>
-					Log out
+					<LogOut class="w-4 h-4" /> Log out
 				</button>
 			{:else}
 				<p>Not logged in</p>

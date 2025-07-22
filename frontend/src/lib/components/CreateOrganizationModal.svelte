@@ -78,7 +78,7 @@
 				Cancel
 			</button>
 			<button
-				class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm"
+				class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm"
 				on:click={handleSubmit}
 			>
 				Create
