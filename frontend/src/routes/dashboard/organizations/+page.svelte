@@ -2,6 +2,8 @@
 	import { onMount } from 'svelte';
 	import { Eye, Pencil, Settings, Power } from 'lucide-svelte';
 	import CreateOrganizationModal from '$lib/components/CreateOrganizationModal.svelte';
+	import TooltipButton from '$lib/components/TooltipButton.svelte';
+	import EditOrganizationModal from '$lib/components/EditOrganizationModal.svelte';
 
 	type Organization = {
 		id: string;
@@ -15,6 +17,8 @@
 	let error = '';
 	let loading = true;
 	let showCreateModal = false;
+	let showEditModal = false;
+	let selectedOrg: Organization | null = null;
 
 	onMount(fetchOrganizations);
 
@@ -43,7 +47,8 @@
 	}
 
 	function editOrg(org: Organization) {
-		console.log('Edit', org.name);
+		selectedOrg = org;
+		showEditModal = true;
 	}
 
 	function openSettings(org: Organization) {
@@ -65,13 +70,40 @@
 
 			if (!res.ok) throw new Error('Failed to create organization');
 
-			const created = await res.json();
-			organizations = [...organizations, created];
+			await fetchOrganizations();
 		} catch (err) {
 			console.error('Error creating organization:', err);
 			alert('Failed to create organization');
 		} finally {
 			showCreateModal = false;
+		}
+	}
+
+	async function handleUpdate(event: CustomEvent) {
+		const updatedOrg = event.detail;
+
+		try {
+			const res = await fetch(`http://localhost:8000/api/organizations/${updatedOrg.id}`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				credentials: 'include',
+				body: JSON.stringify(updatedOrg)
+			});
+
+			if (!res.ok) throw new Error('Failed to update organization');
+
+			// Update local organizations array
+			organizations = organizations.map((org) =>
+				org.id === updatedOrg.id ? { ...org, ...updatedOrg } : org
+			);
+		} catch (err) {
+			console.error('Error updating organization:', err);
+			alert('Failed to update organization');
+		} finally {
+			showEditModal = false;
+			selectedOrg = null;
 		}
 	}
 </script>
@@ -93,7 +125,7 @@
 {:else if error}
 	<p class="text-red-500">{error}</p>
 {:else if organizations.length > 0}
-	<div class="overflow-x-auto">
+	<div class="sm:overflow-visible overflow-x-auto">
 		<table class="min-w-full border border-gray-300 shadow-sm text-sm">
 			<thead class="bg-gray-100 text-left">
 				<tr>
@@ -116,22 +148,14 @@
 						</td>
 						<td class="border px-4 py-2">{new Date(org.createdAt).toLocaleString()}</td>
 						<td class="border px-4 py-2 text-center space-x-1">
-							<button class="icon-button" title="View Branches" on:click={() => viewBranches(org)}>
-								<Eye class="w-4 h-4" />
-							</button>
-							<button class="icon-button" title="Edit Organization" on:click={() => editOrg(org)}>
-								<Pencil class="w-4 h-4" />
-							</button>
-							<button
-								class="icon-button"
-								title={org.isEnabled ? 'Disable' : 'Enable'}
-								on:click={() => toggleStatus(org)}
-							>
-								<Power class="w-4 h-4" />
-							</button>
-							<button class="icon-button" title="Settings" on:click={() => openSettings(org)}>
-								<Settings class="w-4 h-4" />
-							</button>
+							<TooltipButton icon={Pencil} label="Edit Organization" onClick={() => editOrg(org)} />
+							<TooltipButton icon={Eye} label="View Branches" onClick={() => viewBranches(org)} />
+							<TooltipButton
+								icon={Power}
+								label={org.isEnabled ? 'Disable' : 'Enable'}
+								onClick={() => toggleStatus(org)}
+							/>
+							<TooltipButton icon={Settings} label="Settings" onClick={() => openSettings(org)} />
 						</td>
 					</tr>
 				{/each}
@@ -141,23 +165,20 @@
 {:else}
 	<p class="text-gray-500">No organizations found.</p>
 {/if}
+
+<!-- Modals -->
 {#if showCreateModal}
 	<CreateOrganizationModal on:close={() => (showCreateModal = false)} on:create={handleCreate} />
 {/if}
 
-<style>
-	.icon-button {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 2rem;
-		height: 2rem;
-		padding: 0.25rem;
-		border-radius: 0.25rem;
-		transition: all 0.2s ease-in-out;
-	}
-
-	.icon-button:hover {
-		background-color: #f3f4f6;
-	}
-</style>
+{#if showEditModal && selectedOrg}
+	<EditOrganizationModal
+		open={showEditModal}
+		organization={selectedOrg}
+		on:close={() => {
+			showEditModal = false;
+			selectedOrg = null;
+		}}
+		on:update={handleUpdate}
+	/>
+{/if}
