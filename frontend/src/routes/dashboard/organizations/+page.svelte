@@ -4,6 +4,7 @@
 	import CreateOrganizationModal from '$lib/components/CreateOrganizationModal.svelte';
 	import TooltipButton from '$lib/components/TooltipButton.svelte';
 	import EditOrganizationModal from '$lib/components/EditOrganizationModal.svelte';
+	import { goto } from '$app/navigation';
 
 	type Organization = {
 		id: string;
@@ -37,13 +38,8 @@
 		}
 	}
 
-	function toggleStatus(org: Organization) {
-		// TODO: Make API call to toggle status
-		console.log('Toggle', org.id);
-	}
-
 	function viewBranches(org: Organization) {
-		console.log('Branches for', org.name);
+		goto(`/dashboard/branches?orgId=${org.id}`);
 	}
 
 	function editOrg(org: Organization) {
@@ -104,6 +100,30 @@
 		} finally {
 			showEditModal = false;
 			selectedOrg = null;
+		}
+	}
+
+	async function toggleStatus(org: Organization) {
+		try {
+			const res = await fetch(`http://localhost:8000/api/organizations/${org.id}/toggle`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				credentials: 'include'
+			});
+
+			if (!res.ok) throw new Error('Failed to toggle status');
+
+			const updatedOrg = await res.json();
+
+			// Update the UI without refetching all
+			organizations = organizations.map((o) =>
+				o.id === updatedOrg.id ? { ...o, isEnabled: updatedOrg.isEnabled } : o
+			);
+		} catch (err) {
+			console.error('Toggle failed:', err);
+			alert('Failed to toggle status');
 		}
 	}
 </script>
