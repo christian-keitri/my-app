@@ -266,6 +266,28 @@ app.post('/api/branches', async (req, res) => {
     }
 });
 
+// Update branch
+app.put('/api/branches/:id', async (req, res) => {
+    const { id } = req.params;
+    const { name, organizationId, status } = req.body;
+
+    if (!name || !organizationId) {
+        return res.status(400).json({ message: 'Name and organizationId are required' });
+    }
+
+    try {
+        const updatedBranch = await prisma.branch.update({
+            where: { id },
+            data: { name, organizationId, status }
+        });
+
+        res.json(updatedBranch);
+    } catch (err) {
+        console.error('Update branch error:', err);
+        res.status(500).json({ message: 'Failed to update branch' });
+    }
+});
+
 /* ========== START SERVER ========== */
 
 app.listen(8000, () => {

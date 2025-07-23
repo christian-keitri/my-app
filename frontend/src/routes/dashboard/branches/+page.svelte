@@ -2,21 +2,26 @@
 	import { onMount } from 'svelte';
 	import { Pencil, Power, Settings } from 'lucide-svelte';
 	import CreateBranchModal from '$lib/components/CreateBranchModal.svelte';
+	import TooltipButton from '$lib/components/TooltipButton.svelte';
+	import EditBranchModal from '$lib/components/EditBranchModal.svelte';
 
 	type Branch = {
 		id: string;
 		name: string;
+		status: boolean;
+		createdAt: string;
 		organization: {
+			id: string;
 			name: string;
 		} | null;
-		status?: boolean;
-		createdAt: string;
 	};
 
 	let branches: Branch[] = [];
 	let error = '';
 	let loading = true;
 	let showCreateModal = false;
+	let showEditModal = false;
+	let selectedBranch: Branch | null = null;
 
 	// TODO: Replace this with actual organization ID from store/session
 	export let organizationId: string | null = null;
@@ -42,7 +47,8 @@
 	}
 
 	function editBranch(branch: Branch) {
-		alert(`Edit branch: ${branch.name}`);
+		selectedBranch = branch;
+		showEditModal = true;
 	}
 
 	function toggleStatus(branch: Branch) {
@@ -89,15 +95,44 @@
 						<td class="p-2 border">{new Date(branch.createdAt).toLocaleString()}</td>
 						<td class="p-2 border">
 							<div class="flex gap-2">
-								<button on:click={() => editBranch(branch)}><Pencil size={18} /></button>
-								<button on:click={() => toggleStatus(branch)}><Power size={18} /></button>
-								<button on:click={() => openSettings(branch)}><Settings size={18} /></button>
+								<TooltipButton
+									icon={Pencil}
+									label="Edit branch"
+									onClick={() => editBranch(branch)}
+								/>
+								<TooltipButton
+									icon={Power}
+									label={branch.status ? 'Disable branch' : 'Enable branch'}
+									onClick={() => toggleStatus(branch)}
+									colorClass={branch.status ? 'text-green-600' : 'text-gray-600'}
+								/>
+								<TooltipButton
+									icon={Settings}
+									label="Branch settings"
+									onClick={() => openSettings(branch)}
+								/>
 							</div>
 						</td>
 					</tr>
 				{/each}
 			</tbody>
 		</table>
+	{/if}
+
+	{#if showEditModal && selectedBranch}
+		<EditBranchModal
+			open={showEditModal}
+			branch={selectedBranch}
+			on:close={() => {
+				showEditModal = false;
+				selectedBranch = null;
+			}}
+			on:updated={() => {
+				showEditModal = false;
+				selectedBranch = null;
+				fetchBranches(); // Refresh the list
+			}}
+		/>
 	{/if}
 
 	<CreateBranchModal
