@@ -48,7 +48,7 @@
 	}
 
 	function openSettings(org: Organization) {
-		console.log('Settings for', org.name);
+		goto(`/dashboard/settings?orgId=${org.id}`);
 	}
 
 	async function handleCreate(event: CustomEvent) {

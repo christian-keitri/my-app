@@ -4,6 +4,7 @@
 	import CreateBranchModal from '$lib/components/CreateBranchModal.svelte';
 	import TooltipButton from '$lib/components/TooltipButton.svelte';
 	import EditBranchModal from '$lib/components/EditBranchModal.svelte';
+	import { goto } from '$app/navigation';
 
 	type Branch = {
 		id: string;
@@ -73,7 +74,7 @@
 	}
 
 	function openSettings(branch: Branch) {
-		alert(`Settings for: ${branch.name}`);
+		goto(`/dashboard/settings?branchId=${branch.id}`);
 	}
 </script>
 
@@ -108,7 +109,11 @@
 					<tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
 						<td class="p-2 border">{branch.name}</td>
 						<td class="p-2 border">{branch.organization?.name || '—'}</td>
-						<td class="p-2 border">{branch.status ? 'Enabled' : 'Disabled'}</td>
+						<td class="p-2 border">
+							<span class={branch.status ? 'text-green-600 font-semibold' : 'text-gray-500'}>
+								{branch.status ? 'Enabled' : 'Disabled'}
+							</span>
+						</td>
 						<td class="p-2 border">{new Date(branch.createdAt).toLocaleString()}</td>
 						<td class="p-2 border">
 							<div class="flex gap-2">

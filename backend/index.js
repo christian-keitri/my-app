@@ -356,6 +356,49 @@ app.post('/api/branch-portal-codes', async (req, res) => {
 });
 
 
+// Toggle branch portal code status
+app.put('/api/branch-portal-codes/:id/toggle', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const code = await prisma.branchPortalCode.findUnique({ where: { id } });
+        if (!code) {
+            return res.status(404).json({ message: 'Branch portal code not found' });
+        }
+
+        const updated = await prisma.branchPortalCode.update({
+            where: { id },
+            data: { status: !code.status }
+        });
+
+        res.json(updated);
+    } catch (err) {
+        console.error('Toggle portal code status error:', err);
+        res.status(500).json({ message: 'Failed to toggle portal code status' });
+    }
+});
+
+
+// Delete a branch portal code
+app.delete('/api/branch-portal-codes/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const existing = await prisma.branchPortalCode.findUnique({ where: { id } });
+        if (!existing) {
+            return res.status(404).json({ message: 'Branch portal code not found' });
+        }
+
+        await prisma.branchPortalCode.delete({ where: { id } });
+
+        res.json({ message: 'Branch portal code deleted' });
+    } catch (err) {
+        console.error('Delete portal code error:', err);
+        res.status(500).json({ message: 'Failed to delete portal code' });
+    }
+});
+
+
 /* ========== START SERVER ========== */
 
 app.listen(8000, () => {
