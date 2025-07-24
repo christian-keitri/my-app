@@ -51,8 +51,25 @@
 		showEditModal = true;
 	}
 
-	function toggleStatus(branch: Branch) {
-		alert(`Toggle status for: ${branch.name}`);
+	// ✅ This now updates the status locally in the UI
+	async function toggleStatus(branch: Branch) {
+		try {
+			const res = await fetch(`http://localhost:8000/api/branches/${branch.id}/toggle`, {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' }
+			});
+
+			if (!res.ok) {
+				const errData = await res.json();
+				throw new Error(errData.message || 'Failed to toggle status');
+			}
+
+			// ✅ Update the branch status in the local array
+			branches = branches.map((b) => (b.id === branch.id ? { ...b, status: !b.status } : b));
+		} catch (err) {
+			console.error('Toggle error:', err);
+			alert(err instanceof Error ? err.message : 'Unexpected error');
+		}
 	}
 
 	function openSettings(branch: Branch) {

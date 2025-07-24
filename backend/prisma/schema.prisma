@@ -20,13 +20,13 @@ model User {
 }
 
 model Organization {
-  id        String   @id @default(uuid())
-  name      String
+  id          String   @id @default(uuid())
+  name        String
   description String?
-  notes     String?
-  isEnabled  Boolean  @default(true) 
-  status    Boolean  @default(true)
-  createdAt DateTime @default(now())
+  notes       String?
+  isEnabled   Boolean  @default(true)
+  status      Boolean  @default(true)
+  createdAt   DateTime @default(now())
 
   users    User[]
   branches Branch[]
@@ -37,8 +37,20 @@ model Branch {
   name           String
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
-  notes          String?      // Optional: if you use this in UI
-  status         Boolean?     // Optional: if you use this in UI
+  notes          String? // Optional: if you use this in UI
+  status         Boolean? // Optional: if you use this in UI
 
-  createdAt      DateTime     @default(now()) // ← Add this
+  createdAt DateTime @default(now()) // ← Add this
+
+  portalCodes BranchPortalCode[]
+}
+
+model BranchPortalCode {
+  id              String   @id @default(uuid())
+  code            String   @unique
+  branch          Branch   @relation(fields: [branchId], references: [id])
+  branchId        String
+  integrationType String
+  status          Boolean  @default(true)
+  createdAt       DateTime @default(now())
 }

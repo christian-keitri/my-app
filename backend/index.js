@@ -288,6 +288,74 @@ app.put('/api/branches/:id', async (req, res) => {
     }
 });
 
+// Toggle branch status
+app.put('/api/branches/:id/toggle', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Fetch existing branch
+        const branch = await prisma.branch.findUnique({ where: { id } });
+        if (!branch) return res.status(404).json({ message: 'Branch not found' });
+
+        // Toggle its status
+        const updated = await prisma.branch.update({
+            where: { id },
+            data: { status: !branch.status }
+        });
+
+        res.json(updated);
+    } catch (err) {
+        console.error('Toggle branch status error:', err);
+        res.status(500).json({ message: 'Failed to toggle branch status' });
+    }
+});
+
+// Get all branch portal codes
+app.get('/api/branch-portal-codes', async (req, res) => {
+    try {
+        const codes = await prisma.branchPortalCode.findMany({
+            orderBy: { createdAt: 'desc' }
+        });
+        res.json(codes);
+    } catch (err) {
+        console.error('Fetch codes error:', err);
+        res.status(500).json({ message: 'Failed to fetch branch portal codes' });
+    }
+});
+
+
+// Create branch portal code
+app.post('/api/branch-portal-codes', async (req, res) => {
+    try {
+        const { code, branchId, integrationType } = req.body;
+
+        if (!code || !branchId || !integrationType) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+
+        // Ensure the branch exists before inserting
+        const branch = await prisma.branch.findUnique({ where: { id: branchId } });
+        if (!branch) {
+            return res.status(400).json({ message: 'Invalid branchId — branch not found' });
+        }
+
+        const created = await prisma.branchPortalCode.create({
+            data: {
+                code,
+                branchId,
+                integrationType,
+                status: true,
+            }
+        });
+
+        res.status(201).json(created);
+    } catch (err) {
+        console.error('Create branch portal code error:', err);
+        res.status(500).json({ message: 'Failed to create branch portal code' });
+    }
+});
+
+
 /* ========== START SERVER ========== */
 
 app.listen(8000, () => {
